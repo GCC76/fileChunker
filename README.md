@@ -1,5 +1,5 @@
 # fileChunker
-Send and receive file splitted into multiple chunks
+Send and receive file splitted into multiple chunks with MongoDB
 
 # Purpose of the project
 There are situations, when transmitting data between servers, where it is necessary to send large files. When it is not possible to use the FTP protocol, because for example we are working with web API, the file is usually uploaded to the server, encoded in base 64 and sent to an endpoint of a second server.
