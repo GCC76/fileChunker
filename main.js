@@ -1,5 +1,8 @@
-
-//Split file in chunks and send them to backend
+//	*********************************************
+//	fileChunker BY Gian Carlo Ciaccolini
+//	https://github.com/GCC76
+//	Not for commercial use
+// 	********************************************
 
 class fileChunker{
 	
@@ -7,7 +10,7 @@ class fileChunker{
 	constructor(htmlInput=null,customerID=null,serviceID=null){
 		
 		this.postURL = "get_data.php"
-		this.chuckMinSize = 512000;
+		this.chuckMinSize = 256000;
 		this.input = document.querySelector(htmlInput);
 		this.customerID = customerID;
 		this.serviceID = serviceID;
@@ -18,7 +21,9 @@ class fileChunker{
 	fileSplit(){
 		
 		this.input.addEventListener('change', () => {
-		
+			
+			document.querySelector("#chunks_container").innerHTML = '';
+			
 			const file = this.input.files[0];
 			const fileSize = file.size;
 			const fileNameSplit = file.name.split('.')
@@ -40,11 +45,16 @@ class fileChunker{
 			
 			const chuncksNumber = chunks.length;
 			
+			for(let c=1; c <= chuncksNumber; c++){
+				let div = document.createElement("div");
+				div.setAttribute("class","chunk");
+				div.setAttribute("id","chunk_"+c);
+				document.querySelector("#chunks_container").appendChild(div);
+			}
+			
 			let currentChunk = 1;
 			
 			chunks.forEach(chunk => {
-				
-				//console.log(chuncksNumber, currentChunk);
 				
 				let formData = new FormData();
 				let chunkSize = chunk.size
@@ -58,27 +68,40 @@ class fileChunker{
 				formData.append("currentChunk",currentChunk);
 				formData.append("chunkSize",chunkSize);
 				formData.append("chunk",chunk);
-				this.dataSend(formData);
+				this.dataSend(formData,currentChunk);
 				
 				currentChunk ++;
 			})
 		})
 	}
 	
-	dataSend(formData){
+	dataSend(formData,currentChunk){
+		
+		let chunk = document.querySelector("#chunk_"+currentChunk);
 		
 		fetch(this.postURL, {
 			method: 'post',
 			body: formData
 		})
 		.then(res => {
-			return res.text()
+			if(res.status == 200){
+				chunk.classList.add("saved");
+			} else {
+				chunk.classList.add("unsaved");
+			}
+			return res.json()
 		})
 		.then(data => {
-			console.log(data)
+			
+			let response = (data && data['description']) ? data['description'] : null;
+			
+			if(response){
+				if(response == "done"){
+					alert("Operation completed");
+				} else{
+					console.log(response)
+				}
+			}
 		});
-		
 	}
-	
-	
 }
